@@ -1,0 +1,74 @@
+
+clc
+clear all
+close all
+
+n1 = [20,34];
+n2 = [10,67];
+
+mid1 = calcMidPoint(n1,n2);
+mid2 = mid1;
+halves = mid1;
+% 
+% for j = 1:10
+%             
+%     firstHalf = calcMidPoint(n1,mid1);    
+%     mid1 = firstHalf;
+% 
+%     secondHalf = calcMidPoint(n2,mid2);
+%     mid2 = secondHalf;
+% 
+%     halves = [secondHalf;halves;firstHalf]
+% end
+            
+% blah = [[10,9];[0,1]]
+% 
+% test = calcMid(blah)
+% test2 = calcMid(test)
+% test3 = calcMid(unique(test2,'rows'))
+
+midArry = calcMidArry([n1;n2])
+
+for j = 1:2
+    
+    [midArry,x] = calcMidArry(midArry)
+  
+end
+
+
+
+
+
+
+
+%%
+function mid = calcMidPoint(c1,c2)
+
+    x1 = c1(1,1);
+    y1 = c1(1,2);
+
+    x2 = c2(1,1);
+    y2 = c2(1,2);
+
+    mid = [((x1+x2)/2),((y1 + y2)/2)];
+end
+
+%%
+function [fullArry,midArry] = calcMidArry(arry)
+
+    fullArry = zeros(0);
+    midArry = zeros(0);
+
+    for i = 1: size(arry) -1
+
+        a = arry(i,[1:2]);
+        b = arry(i+1,[1:2]);
+    
+        mid = calcMidPoint(a,b);
+        
+        fullArry = unique([fullArry;a;mid;b],'rows');
+        midArry = [midArry;mid];
+
+    end
+
+end

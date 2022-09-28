@@ -1,0 +1,321 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>createMap</title><meta name="generator" content="MATLAB 9.12"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2022-09-09"><meta name="DC.source" content="createMap.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="comment">%%John Little</span>
+<span class="comment">%MAE593A Robot Motion Planning</span>
+<span class="comment">%Assignment 1</span>
+
+clc
+clear <span class="string">all</span>
+close <span class="string">all</span>
+
+makeMap(100,100)
+loadmap(<span class="string">'test4.mat'</span>)
+
+<span class="comment">% Function to create the map and the obstacle polygons</span>
+<span class="comment">% Takes in xlimit and ylimit to create the dimensions of the map</span>
+<span class="keyword">function</span> makeMap(xlim,ylim)
+
+    axis([0 xlim 0 ylim])
+    hold <span class="string">on</span>
+
+    <span class="comment">%Matrix to hold the coordinates</span>
+    coords = zeros();
+    A = zeros();
+    B = zeros();
+    obst = [];
+    b=0;
+
+    <span class="comment">%While loop that checks for enter button to be pressed to end</span>
+    <span class="comment">%obstacle creation</span>
+    <span class="keyword">while</span>(b ~= 1)
+
+        <span class="comment">%Loop to gather input from user for creating obstacle shape</span>
+        <span class="keyword">for</span> a = 1:4
+            coords(a,[1,2]) = ginput(1);
+
+            <span class="keyword">if</span>(a &gt; 1 &amp;  a &lt; 4)
+                A = [coords(a,1), coords(a-1,1)];
+                B = [coords(a,2), coords(a-1,2)];
+                line(A,B) <span class="comment">%%Nate gave me the idea to use line</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+
+        start = [coords(1,1) coords(1,2)];
+        stop = [coords(a,1) coords(a,2)];
+
+        <span class="comment">%Determines if last user selected point is within 5 points</span>
+        <span class="comment">%of first point and closes the polygon</span>
+        <span class="keyword">if</span> (norm(abs(start - stop)) &lt; 5)
+            coords(a,1) = start(1,1);
+            coords(a,2) = start(1,2);
+
+        <span class="keyword">end</span>
+
+
+        axis([0 xlim 0 ylim])
+        hold <span class="string">on</span>
+
+        polygorn = polyshape(coords);
+        plot(polygorn);
+        obst = [obst, polygorn];
+
+        b = waitforbuttonpress;
+    <span class="keyword">end</span>
+
+
+    save <span class="string">test4.mat</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> loadmap(filename)
+
+    xlim = 100;
+    ylim = 100;
+
+    axis([0 xlim 0 ylim])
+    hold <span class="string">on</span>
+
+    load(filename)
+
+    <span class="keyword">for</span> polyshape = obst
+
+        plot(polyshape);
+
+    <span class="keyword">end</span>
+
+    checkisFree(obst);
+
+
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> isFree(arry, close)
+
+    point = ginput(1);
+
+    <span class="keyword">for</span> polyshape = arry
+        TFin = isinterior(polyshape, point(1,1),point(1,2));
+
+        <span class="keyword">if</span>(TFin == 1)
+            <span class="keyword">break</span>
+        <span class="keyword">end</span>
+
+    <span class="keyword">end</span>
+
+    <span class="keyword">if</span>(TFin == 1)
+        disp(<span class="string">'Obstacle'</span>)
+    <span class="keyword">elseif</span> (TFin == 0)
+        disp(<span class="string">'Free Space'</span>)
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">function</span> checkisFree(arry)
+
+    c = 0;
+    <span class="keyword">while</span> (c ~= 1)
+
+        isFree(arry)
+        c = waitforbuttonpress;
+
+    <span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Error using ginput
+Interrupted by figure deletion
+
+Error in createMap&gt;makeMap (line 32)
+            coords(a,[1,2]) = ginput(1);
+
+Error in createMap (line 9)
+makeMap(100,100)
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2022a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%%John Little
+%MAE593A Robot Motion Planning
+%Assignment 1
+
+clc
+clear all
+close all
+
+makeMap(100,100)
+loadmap('test4.mat')
+
+% Function to create the map and the obstacle polygons
+% Takes in xlimit and ylimit to create the dimensions of the map
+function makeMap(xlim,ylim)
+     
+    axis([0 xlim 0 ylim])
+    hold on
+
+    %Matrix to hold the coordinates
+    coords = zeros();
+    A = zeros();
+    B = zeros();
+    obst = [];
+    b=0;
+
+    %While loop that checks for enter button to be pressed to end
+    %obstacle creation
+    while(b ~= 1)
+        
+        %Loop to gather input from user for creating obstacle shape
+        for a = 1:4
+            coords(a,[1,2]) = ginput(1);
+   
+            if(a > 1 &  a < 4)
+                A = [coords(a,1), coords(a-1,1)];
+                B = [coords(a,2), coords(a-1,2)];
+                line(A,B) %%Nate gave me the idea to use line
+            end
+        end
+
+        start = [coords(1,1) coords(1,2)];
+        stop = [coords(a,1) coords(a,2)];
+
+        %Determines if last user selected point is within 5 points 
+        %of first point and closes the polygon
+        if (norm(abs(start - stop)) < 5)
+            coords(a,1) = start(1,1);
+            coords(a,2) = start(1,2);
+    
+        end
+
+
+        axis([0 xlim 0 ylim])
+        hold on
+
+        polygorn = polyshape(coords);
+        plot(polygorn);
+        obst = [obst, polygorn];
+
+        b = waitforbuttonpress;
+    end
+
+
+    save test4.mat
+end
+
+function loadmap(filename)
+
+    xlim = 100;
+    ylim = 100; 
+
+    axis([0 xlim 0 ylim])
+    hold on
+
+    load(filename)
+
+    for polyshape = obst
+
+        plot(polyshape);
+
+    end
+
+    checkisFree(obst);
+
+
+end
+
+function isFree(arry, close)
+
+    point = ginput(1);
+    
+    for polyshape = arry
+        TFin = isinterior(polyshape, point(1,1),point(1,2));
+
+        if(TFin == 1)
+            break
+        end
+
+    end
+
+    if(TFin == 1)
+        disp('Obstacle')
+    elseif (TFin == 0)
+        disp('Free Space')
+    end
+end
+
+function checkisFree(arry)
+    
+    c = 0;
+    while (c ~= 1)
+
+        isFree(arry)
+        c = waitforbuttonpress;
+      
+    end
+
+end
+
+
+
+
+##### SOURCE END #####
+--></body></html>
