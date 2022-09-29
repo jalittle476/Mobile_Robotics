@@ -3,7 +3,7 @@ close all
 clc
 
 map = mpMap;
-%mpObj.makeMap(100,100);
+%map.makeMap(100,100);
 obstArry = map.loadmap('test4.mat');
 polygonArry = obstArry.obst;
 %close all
@@ -28,37 +28,44 @@ addMapNodes(world,V);
 
 addMapEdges(world,map,polygonArry,V);
 
+O = zeros(0);
+C = Bfs(world,O,startNode,goalNode)
+% bp = findBackPointer(C,2)
+path = findPath(C)
+
 world.plot
 
+highlightPath(world,path)
 
-O = zeros(0);
-test = Bfs(world,O,startNode,goalNode);
 
 
 %%
-function O = Bfs(world,O,startingNode,goalNode)
+function C = Bfs(world,O,startNode,goalNode)
     
-    O = push(O,startingNode)
+    O = push2(O,startNode,0)
     C = zeros(0)
 
     while(~isempty(O))
+
         
-        [e,O] = pop(O)
+        [element,pointer,O] = pop2(O);
+%        elementIsNotMemberOfC = ~ismember(element,C)
 
-        if(~ismember(e,C))
+        if(~ismember(element,C));
             
-            C = push(C,e)
-
-            if(e == goalNode)
-                  break
-            end
-
-            neighbors = findNeighbors(world,O,e);
-
+            C = push2(C,element,pointer);
+            
+            [node,neighbors] = findNeighbors(world,O,element)
+            
             for i = 1:size(neighbors,2)
+
+                if(neighbors(i) == goalNode)
+                    C = push2(C,neighbors(i),element)
+                    return
+                end
                 
                 if(~ismember(neighbors(i),C))
-                    O = push(O,neighbors(i));
+                    O = push2(O,neighbors(i),element);
                     
 
                 end
@@ -72,14 +79,52 @@ function O = Bfs(world,O,startingNode,goalNode)
 end
 
 %%
+function path = findPath(queue)
+    
+    goalNode = queue(1,1);
+    backPointer = findBackPointer(queue,goalNode);
+    path = [goalNode,backPointer];
 
+    while(true)
+      
+        backPointer = findBackPointer(queue,backPointer)
 
+        if(backPointer == 0)
+            return
+        end
+
+        path = [path,backPointer];
+        
+    end
+
+end
 
 %%
-function neighbors = findNeighbors(world,queue,node)
+function highlightPath(world,path)
+
+    for i = 1:size(path,2)
+        world.highlight_node(path(i))
+    end
+
+end
+
+%%
+function backPointer = findBackPointer(queue, value)
+    
+    for i = 1: size(queue,1)
+
+        if(queue(i,1) == value)
+            backPointer = queue(i,2);
+            return
+        end
+    end
+
+end
+
+%%
+function [node,neighbors] = findNeighbors(world,queue,node)
 
     neighbors = world.neighbours(node);
-
 end
 
 %%
@@ -110,7 +155,7 @@ function queue = push2(queue,element,pointer)
         queue(1,1) = element;
         queue(1,2) = pointer;
     else
-        pair = [element,pointer]
+        pair = [element,pointer];
         queue = [pair;queue];
     end
 
@@ -119,17 +164,17 @@ end
 %%
 function [element,pointer,queue] = pop2(queue)
 
-    element = queue(end,1)
-    pointer = queue(end,2)
+    element = queue(end,1);
+    pointer = queue(end,2);
 
     if(size(queue,1) == 1)
         queue = zeros(0);
         return 
     end
 
-    elementCol = queue(end-1,1)
-    pointerCol = queue(end-1,2)
-    queue = [elementCol,pointerCol]
+    elementCol = queue(end-1,1);
+    pointerCol = queue(end-1,2);
+    queue = [elementCol,pointerCol];
 
 end
 
@@ -137,12 +182,16 @@ end
 function V = getmapVertices(polygonArry)
     A = polygonArry(1,1).Vertices;
     obstLength = size(polygonArry,2);
-    for i = 1:obstLength - 1
-    
-        B = polygonArry(1,i+1).Vertices;
-        V = [A;B];
-        A = V;
-    
+    if(obstLength > 1)
+        for i = 1:obstLength - 1
+        
+            B = polygonArry(1,i+1).Vertices;
+            V = [A;B];
+            A = V;
+        
+        end
+    else
+        V = polygonArry.Vertices;
     end
 end
 
