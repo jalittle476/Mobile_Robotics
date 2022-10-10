@@ -1,9 +1,12 @@
+%%John Little
+%%Assignment 2
+
 clear all
 close all
 clc
 
-map = mpMap;
-%map.makeMap(100,100);
+map = mpMap;                        %Calls mpMap class to create map object
+%map.makeMap(100,100);              %To create new maps instead of loading test4.m 
 obstArry = map.loadmap('test4.mat');
 polygonArry = obstArry.obst;
 %close all
@@ -11,7 +14,7 @@ polygonArry = obstArry.obst;
 world = PGraph();
 
 
-%% function execution for generating visibility diagram 
+%% Function execution for generating visibility diagram
 V = getmapVertices(polygonArry);
 
 disp("Pick a starting point.")
@@ -36,8 +39,6 @@ path = findPath(C)
 world.plot
 
 highlightPath(world,path)
-
-
 
 %% BFS Function (Needs work)
 function C = Bfs(world,O,startNode,goalNode)
@@ -124,13 +125,13 @@ function backPointer = findBackPointer(queue, value)
 
 end
 
-%% Function to return neighbors of given node
+%%Function to return neighbors of given node
 function [node,neighbors] = findNeighbors(world,queue,node)
 
     neighbors = world.neighbours(node);
 end
 
-%% Original push function (depricated)
+%%Original push function (depricated)
 function queue = push(queue,element)
 
     

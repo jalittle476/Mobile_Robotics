@@ -1,0 +1,173 @@
+clear all
+close all
+clc
+
+map = mpMap;
+%map.makeMap(100,100);
+obstArry = map.loadmap('test4.mat');
+polygonArry = obstArry.obst;
+%close all
+
+r = 15;
+n = 150;
+
+world = PGraph();
+world = SampleFree(world,map,polygonArry,n);
+addAllEdges(world,map,polygonArry,n,r);
+plot(world)
+findPath(world);
+
+
+%% function to find path
+
+function findPath(world)
+
+    start = world.pick();
+    goal = world.pick();
+
+    path = world.Astar(start,goal);
+
+    for i = 1:length(path)
+    
+        world.highlight_node(path(i));
+
+    end
+
+end
+
+
+%% function to add all PRM edges
+
+function addAllEdges(world,map,polygonArry,n,r)
+    
+    for i = 1:n
+        addEdges(world,map,polygonArry,i,r);
+    end
+    
+end
+
+%% function to add local edges
+
+    function E = addEdges(world,map,polygonArry,v,r)
+
+        near = Near(world,v,r);
+
+        for i = 1:length(near)
+            
+            if(~world.samecomponent(v,near(i)))
+    
+                if(~binaryCheck(world,map,polygonArry,v,near(i)))
+            
+                    world.add_edge(v,near(i));
+
+                end
+            end
+
+        end
+
+        E = world;
+
+    end
+
+%% Based on GP's Sample Free function
+    function G = SampleFree(world, map, polygonArry,n)
+        count = 0;
+        while count < n
+            qx = floor(rand * 100);
+            qy = floor(rand * 100);
+            q =[qx qy];
+            if ~map.isFreePoint(polygonArry,q)
+                world.add_node(q);
+                count = count + 1;
+            end
+        end
+        G = world;
+    end
+
+%% based on GP's Sample near function
+    function near = Near(world, v, r)
+        [d, w] = world.distances(world.coord(v));
+        near = w((d<r)&(d>0)); % This is to get all nodes smaller than n and greater than 0
+    end
+
+%% Binary check method that creates multiple partitions to discretize the space
+%  between two nodes
+function TF = binaryCheck(world, map,arry, n1,n2)
+
+    n1Coord = world.coord(n1)';
+    n2Coord = world.coord(n2)';
+
+    [fullArry,midArry] = calcMidArry([n1Coord;n2Coord]);
+    flag = map.isFreePoint(arry,midArry);
+
+%     A = [midArry(:,1)];
+%     B = [midArry(:,2)];
+%     scatter(A,B);
+
+    if(flag ~= 1)
+
+        for j = 1:3
+    
+            [fullArry,midArry] = calcMidArry(fullArry);
+            
+
+%             A = [midArry(:,1)];
+%             B = [midArry(:,2)];
+%             scatter(A,B);
+%             size(midArry,1);
+
+            for k = 1:size(midArry,1)
+                
+                x = midArry(k,1);
+                y = midArry(k,2);
+
+                flag = map.isFreePoint(arry,[x,y]);
+
+                if(flag == 1)
+                    break
+                end
+            end
+
+            if(flag == 1)
+                break
+            end
+
+
+        end
+    
+    end
+
+    TF = flag;
+end
+
+%% Function for calculating midpoint between two points
+function mid = calcMidPoint(c1,c2)
+
+    x1 = c1(1,1);
+    y1 = c1(1,2);
+
+    x2 = c2(1,1);
+    y2 = c2(1,2);
+
+    mid = [((x1+x2)/2),((y1 + y2)/2)];
+end
+
+%% Function for creating an evolving array of points and midpoints
+function [fullArry,midArry] = calcMidArry(arry)
+
+    fullArry = zeros(0);
+    midArry = zeros(0);
+
+    for i = 1: size(arry) -1
+
+        a = arry(i,[1:2]);
+        b = arry(i+1,[1:2]);
+    
+        mid = calcMidPoint(a,b);
+        
+        fullArry = unique([fullArry;a;mid;b],'rows');
+        midArry = [midArry;mid];
+
+    end
+
+end
