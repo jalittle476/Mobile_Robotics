@@ -8,73 +8,31 @@ obstArry = map.loadmap('test4.mat');
 polygonArry = obstArry.obst;
 %close all
 
-r = 10;
-n = 100;
+circle(1,2,2)
 
-world = PGraph();
-world = SampleFree(world,map,polygonArry,n);
-%addAllEdges(world,map,polygonArry,n,r);
+%%
+function start = setStart(world)
 
+    start = world.pick();
 
-%near = Near(world,1,r)
-world.highlight_node(1)
-%world.highlight_node(near)
-%addEdges(world,map,polygonArry,1,near);
-
-
-
-plot(world)
-
-%% function to add all PRM edges
-
-function addAllEdges(world,map,polygonArry,n,r)
-    
-    for i = 1:n
-        addEdges(world,map,polygonArry,i,r)
-    end
-    
 end
 
-%% function to add local edges
+%%
+function goal = setGoal(world)
 
-    function E = addEdges(world,map,polygonArry,v,r)
+    goal = world.pick();
 
-        near = Near(world,v,r);
+end
 
-        for i = 1:length(near)
-            near(i)
-            if(~binaryCheck(world,map,polygonArry,v,near(i)))
+%%
+function close = nearGoal(world,node,goal)
+    if(norm(abs(node - goal)) < 5)
+        close = 1;
+    else 
+        close = 0; 
+    end 
+end
 
-                world.add_edge(v,near(i));
-
-            end
-
-        end
-
-        E = world;
-
-    end
-
-%% Based on GP's Sample Free function
-    function G = SampleFree(world, map, polygonArry,n)
-        count = 0;
-        while count < n
-            qx = floor(rand * 100);
-            qy = floor(rand * 100);
-            q =[qx qy];
-            if ~map.isFreePoint(polygonArry,q)
-                world.add_node(q);
-                count = count + 1;
-            end
-        end
-        G = world;
-    end
-
-%% based on GP's Sample near function
-    function near = Near(world, v, r)
-        [d, w] = world.distances(world.coord(v));
-        near = w((d<r)&(d>0)); % This is to get all nodes smaller than n and greater than 0
-    end
 
 %% Binary check method that creates multiple partitions to discretize the space
 %  between two nodes
