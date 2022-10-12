@@ -8,31 +8,100 @@ obstArry = map.loadmap('test4.mat');
 polygonArry = obstArry.obst;
 %close all
 
-circle(1,2,2)
+r = 15;
+n = 150;
 
-%%
-function start = setStart(world)
+xlim = 100;
+ylim = 100;
+
+axis([0 xlim 0 ylim])
+hold on
+
+world = PGraph();
+world = SampleFree(world,map,polygonArry,n);
+
+addAllEdges(world,map,polygonArry,n,r);
+% addEdges(world,map,polygonArry,1,r);
+% near = Near(world,1,r)
+% world.samecomponent(1,near(1))
+% world.highlight_node(1)
+% world.highlight_node(near(1))
+plot(world)
+findPath(world);
+
+
+
+%% function to find path
+
+function findPath(world)
 
     start = world.pick();
-
-end
-
-%%
-function goal = setGoal(world)
-
     goal = world.pick();
 
+    path = world.Astar(start,goal)
+
+    for i = 1:length(path)
+    
+        world.highlight_node(path(i));
+
+    end
+
+    if(isempty(path))
+        disp(There is no path between these points);
+    end
+
 end
 
-%%
-function close = nearGoal(world,node,goal)
-    if(norm(abs(node - goal)) < 5)
-        close = 1;
-    else 
-        close = 0; 
-    end 
+%% function to add all PRM edges
+
+function addAllEdges(world,map,polygonArry,n,r)
+    
+    for i = 1:n
+        addEdges(world,map,polygonArry,i,r);
+    end
+    
 end
 
+%% function to add local edges
+
+    function E = addEdges(world,map,polygonArry,v,r)
+
+        near = Near(world,v,r);
+
+        for i = 1:length(near)
+            
+            if(~binaryCheck(world,map,polygonArry,v,near(i)))
+            
+                world.add_edge(v,near(i));
+
+            end
+
+        end
+
+        E = world;
+
+    end
+
+%% Based on GP's Sample Free function
+    function G = SampleFree(world, map, polygonArry,n)
+        count = 0;
+        while count < n
+            qx = floor(rand * 100);
+            qy = floor(rand * 100);
+            q =[qx qy];
+            if ~map.isFreePoint(polygonArry,q)
+                world.add_node(q);
+                count = count + 1;
+            end
+        end
+        G = world;
+    end
+
+%% based on GP's Sample near function
+    function near = Near(world, v, r)
+        [d, w] = world.distances(world.coord(v));
+        near = w((d<r)&(d>0)); % This is to get all nodes smaller than n and greater than 0
+    end
 
 %% Binary check method that creates multiple partitions to discretize the space
 %  between two nodes

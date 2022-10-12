@@ -11,6 +11,12 @@ polygonArry = obstArry.obst;
 r = 15;
 n = 150;
 
+xlim = 100;
+ylim = 100;
+
+axis([0 xlim 0 ylim])
+hold on
+
 world = PGraph();
 world = SampleFree(world,map,polygonArry,n);
 
@@ -38,6 +44,10 @@ function findPath(world)
     
         world.highlight_node(path(i));
 
+    end
+
+    if(isempty(path))
+        disp("There is no path between these points");
     end
 
 end

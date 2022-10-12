@@ -11,6 +11,12 @@ polygonArry = obstArry.obst;
 r = 15;
 n = 150;
 
+xlim = 100;
+ylim = 100;
+
+axis([0 xlim 0 ylim])
+hold on
+
 world = PGraph();
 world = SampleFree(world,map,polygonArry,n);
 addAllEdges(world,map,polygonArry,n,r);

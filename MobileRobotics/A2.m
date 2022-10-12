@@ -3,7 +3,7 @@ close all
 clc
 
 map = mpMap;
-%map.makeMap(100,100);
+%map.makeMap(10,10);
 obstArry = map.loadmap('test4.mat');
 polygonArry = obstArry.obst;
 %close all
@@ -28,14 +28,14 @@ addMapNodes(world,V);
 
 addMapEdges(world,map,polygonArry,V);
 
-O = zeros(0);
-C = Bfs(world,O,startNode,goalNode)
+% O = zeros(0);
+% C = Bfs(world,O,startNode,goalNode)
 % bp = findBackPointer(C,2)
-path = findPath(C)
+%path = findPath(C)
 
 world.plot
 
-highlightPath(world,path)
+% highlightPath(world,path)
 
 
 

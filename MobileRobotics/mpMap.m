@@ -46,7 +46,7 @@ classdef mpMap < handle
         
                 %Determines if last user selected point is within 5 points 
                 %of first point and closes the polygon
-                if (norm(abs(start - stop)) < 5)
+                if (norm(abs(start - stop)) < 0.5)
                     self.coords(a,1) = start(1,1);
                     self.coords(a,2) = start(1,2);
             
@@ -69,8 +69,8 @@ classdef mpMap < handle
         
         function lm = loadmap(self,filename)
         
-            xlim = 100;
-            ylim = 100; 
+            xlim = 10;
+            ylim = 10; 
         
             axis([0 xlim 0 ylim])
             hold on
